@@ -5,7 +5,7 @@ import { HomePageClient } from "@/components/HomePageClient";
 
 
 // --- ФУНКЦИИ ДЛЯ ПОЛУЧЕНИЯ ДАННЫХ ---
-const STRAPI_URL = "http://127.0.0.1:1337";
+const STRAPI_URL = process.env.NEXT_PUBLIC_STRAPI_URL;
 
 // Получаем 3 последних проекта для главной страницы
 async function getFeaturedProjects(lang: string) {

@@ -34,7 +34,7 @@ interface IAboutUs {
 // --- Функция для получения данных ---
 async function getAboutUsData() {
   // Для одиночного типа URL другой, и нам нужно populate для всех полей
-  const url = 'http://127.0.0.1:1337/api/about-us?populate[image]=true&populate[stats]=true';
+  const url = `${process.env.NEXT_PUBLIC_STRAPI_URL}/api/about-us?populate[image]=true&populate[stats]=true`;
   const res = await fetch(url, { cache: 'no-store' });
 
   if (!res.ok) {
@@ -49,7 +49,7 @@ async function getAboutUsData() {
 // --- Компонент страницы ---
 export default async function AboutUsPage() {
   const data: IAboutUs = await getAboutUsData();
-  const strapiUrl = "http://127.0.0.1:1337";
+  const strapiUrl = process.env.NEXT_PUBLIC_STRAPI_URL;
 
   return (
     <main className="container mx-auto p-4 md:p-8">

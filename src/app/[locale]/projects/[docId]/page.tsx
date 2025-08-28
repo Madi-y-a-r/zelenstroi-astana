@@ -30,7 +30,7 @@ interface IProject {
 
 // --- ПОЛНАЯ И РАБОТАЮЩАЯ ФУНКЦИЯ ---
 async function getProjectByDocId(docId: string) {
-  const url = `http://127.0.0.1:1337/api/projects/${docId}?populate=*`;
+  const url = `${process.env.NEXT_PUBLIC_STRAPI_URL}/api/projects/${docId}?populate=*`;
   const res = await fetch(url, { cache: 'no-store' });
 
   if (!res.ok) {
@@ -50,7 +50,7 @@ export default async function ProjectDetailsPage(props: { params: Promise<{ docI
   } = params;
 
   const project: IProject = await getProjectByDocId(docId);
-  const strapiUrl = "http://127.0.0.1:1337";
+  const strapiUrl = process.env.NEXT_PUBLIC_STRAPI_URL;
 
   if (!project) {
     return <div className="container mx-auto p-8">Проект не найден.</div>;

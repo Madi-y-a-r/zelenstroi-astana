@@ -60,7 +60,7 @@ function Section({ children }: { children: React.ReactNode }) {
 
 // --- Главный компонент для отображения ---
 export function HomePageClient({ projects, services, stats }: { projects: IProject[], services: IService[], stats: IStatisticItem[] | null }) {
-  const STRAPI_URL = "http://127.0.0.1:1337";
+  const STRAPI_URL = process.env.NEXT_PUBLIC_STRAPI_URL;
 
   return (
     <main className="pt-[80px] bg-white">

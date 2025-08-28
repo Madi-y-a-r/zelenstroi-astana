@@ -25,7 +25,7 @@ interface IService {
 // --- ФУНКЦИЯ ПОЛУЧЕНИЯ ДАННЫХ ПО SLUG ---
 async function getServiceBySlug(slug: string) {
   // Фильтруем по slug и запрашиваем изображение
-  const url = `http://127.0.0.1:1337/api/services?filters[slug][$eq]=${slug}&populate=image`;
+  const url = `${process.env.NEXT_PUBLIC_STRAPI_URL}/api/services?filters[slug][$eq]=${slug}&populate=image`;
   const res = await fetch(url, { cache: 'no-store' });
   if (!res.ok) throw new Error("Failed to fetch service");
 
@@ -42,7 +42,7 @@ export default async function ServiceDetailsPage(props: { params: Promise<{ slug
   } = params;
 
   const service: IService = await getServiceBySlug(slug);
-  const strapiUrl = "http://127.0.0.1:1337";
+  const strapiUrl = process.env.NEXT_PUBLIC_STRAPI_URL;
 
   if (!service) {
     return (

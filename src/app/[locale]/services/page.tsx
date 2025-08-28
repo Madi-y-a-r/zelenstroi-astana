@@ -28,7 +28,7 @@ interface IService {
 // --- Конец обновления ---
 
 async function getServices() {
-  const url = 'http://127.0.0.1:1337/api/services?populate=image';
+  const url = `${process.env.NEXT_PUBLIC_STRAPI_URL}/api/services?populate=image`;
   const res = await fetch(url, { cache: 'no-store' });
   if (!res.ok) throw new Error('Failed to fetch services from Strapi');
   const response = await res.json();
@@ -37,7 +37,7 @@ async function getServices() {
 
 export default async function ServicesPage() {
   const services: IService[] = await getServices();
-  const strapiUrl = "http://127.0.0.1:1337";
+  const strapiUrl = process.env.NEXT_PUBLIC_STRAPI_URL;
 
   return (
     <main className="container mx-auto p-4 md:p-8">

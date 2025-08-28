@@ -13,7 +13,7 @@ interface IContact {
 
 // Функция для получения данных
 async function getContactData() {
-  const url = 'http://127.0.0.1:1337/api/contact';
+  const url = `${process.env.NEXT_PUBLIC_STRAPI_URL}/api/contact`;
   const res = await fetch(url, { cache: 'no-store' });
   if (!res.ok) throw new Error('Failed to fetch Contact data');
   const response = await res.json();

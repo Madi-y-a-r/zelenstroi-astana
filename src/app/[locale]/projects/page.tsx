@@ -33,7 +33,7 @@ interface IProject {
 // --- КОНЕЦ ИСПРАВЛЕНИЙ ---
 
 async function getProjects() {
-  const res = await fetch('http://127.0.0.1:1337/api/projects?populate=coverImage', { cache: 'no-store' });
+  const res = await fetch(`${process.env.NEXT_PUBLIC_STRAPI_URL}/api/projects?populate=coverImage`, { cache: 'no-store' });
   if (!res.ok) throw new Error('Failed to fetch data from Strapi');
   const projectsData = await res.json();
   return projectsData.data;
@@ -41,7 +41,7 @@ async function getProjects() {
 
 export default async function ProjectsPage() {
   const projects: IProject[] = await getProjects();
-  const strapiUrl = "http://127.0.0.1:1337";
+  const strapiUrl = process.env.NEXT_PUBLIC_STRAPI_URL;
 
   return (
     <main className="container mx-auto p-4 md:p-8 pt-[80px]">
