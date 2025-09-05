@@ -1,71 +1,75 @@
-// src/app/contacts/page.tsx
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+// src/app/[locale]/contacts/page.tsx
 
-// Определяем тип для страницы Контакты
+import { getLocale, getTranslations } from "next-intl/server";
+import { fetchApi } from "@/lib/strapi";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import { Metadata } from "next";
+
+// --- ИНТЕРФЕЙСЫ (соответствуют вашему API) ---
 interface IContact {
   title: string;
-  address: string;
-  phone: string;
-  email: string;
-  workingHours: string;
+  contact: string;
   mapEmbedUrl: string;
 }
 
-// Функция для получения данных
-async function getContactData() {
-  const url = `${process.env.NEXT_PUBLIC_STRAPI_URL}/api/contact`;
-  const res = await fetch(url, { cache: 'no-store' });
-  if (!res.ok) throw new Error('Failed to fetch Contact data');
-  const response = await res.json();
-  return response.data;
+// --- ФУНКЦИЯ ДЛЯ ПОЛУЧЕНИЯ ДАННЫХ (ИСПРАВЛЕНО) ---
+async function getContactData(locale: string) {
+  try {
+    // fetchApi уже возвращает нам нужный объект, а не {data, meta}
+    const response = await fetchApi<IContact>('/api/contact', locale, {});
+    
+    // Просто возвращаем сам объект, который получили
+    return response;
+  } catch (error) {
+    console.error("Failed to fetch contact data:", error);
+    return null;
+  }
 }
+// --- КОНЕЦ ИСПРАВЛЕНИЙ ---
 
-// Компонент страницы
+
+
+// --- КОМПОНЕНТ СТРАНИЦЫ ---
 export default async function ContactPage() {
-  const data: IContact = await getContactData();
+  const locale = await getLocale();
+  const data = await getContactData(locale);
 
+  if (!data) {
+    return (
+      <main className="container mx-auto p-8 text-center">
+        <p>Не удалось загрузить данные страницы.</p>
+      </main>
+    );
+  }
+  
   return (
     <main className="container mx-auto p-4 md:p-8">
       <section className="text-center mb-12">
-        <h1 className="text-4xl md:text-5xl font-bold mb-4">{data.title}</h1>
+        <h1 className="text-4xl md:text-5xl font-bold mb-4 text-gray-800">{data.title}</h1>
       </section>
 
       <section className="grid md:grid-cols-2 gap-12">
-        {/* Блок с контактной информацией */}
-        <div>
-          <Card>
-            <CardHeader>
-              <CardTitle>Контактная информация</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4 text-lg">
-              <p><strong>Адрес:</strong> {data.address}</p>
-              <p><strong>Телефон:</strong> <a href={`tel:${data.phone}`} className="text-green-700 hover:underline">{data.phone}</a></p>
-              <p><strong>Email:</strong> <a href={`mailto:${data.email}`} className="text-green-700 hover:underline">{data.email}</a></p>
-              <p><strong>Часы работы:</strong> {data.workingHours}</p>
-            </CardContent>
-          </Card>
+        {/* Левый блок с Markdown текстом */}
+        <div className="prose prose-lg max-w-none">
+          <ReactMarkdown remarkPlugins={[remarkGfm]}>
+            {data.contact} 
+          </ReactMarkdown>
         </div>
 
-        {/* Блок с картой */}
-        <div>
-          <Card className="overflow-hidden">
-            <CardHeader>
-              <CardTitle>Мы на карте</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {data.mapEmbedUrl && (
-                <iframe
-                  src={data.mapEmbedUrl}
-                  width="100%"
-                  height="400"
-                  style={{ border: 0 }}
-                  allowFullScreen={true}
-                  loading="lazy"
-                  referrerPolicy="no-referrer-when-downgrade"
-                ></iframe>
-              )}
-            </CardContent>
-          </Card>
+        {/* Правый блок с картой */}
+        <div className="rounded-lg overflow-hidden shadow-lg h-[450px]">
+          {data.mapEmbedUrl && (
+            <iframe
+              src={data.mapEmbedUrl}
+              width="100%"
+              height="100%"
+              style={{ border: 0 }}
+              allowFullScreen={true}
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+            ></iframe>
+          )}
         </div>
       </section>
     </main>

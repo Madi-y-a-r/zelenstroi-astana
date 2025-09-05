@@ -1,55 +1,56 @@
 
 
 import { HomePageClient } from "@/components/HomePageClient";
+import { fetchApi } from "@/lib/strapi";
+import { getLocale } from "next-intl/server";
 
 
-
-// --- ФУНКЦИИ ДЛЯ ПОЛУЧЕНИЯ ДАННЫХ ---
-const STRAPI_URL = process.env.NEXT_PUBLIC_STRAPI_URL;
-
-// Получаем 3 последних проекта для главной страницы
-async function getFeaturedProjects(lang: string) {
-  const url = `${STRAPI_URL}/api/projects?locale=${lang}&populate=coverImage&pagination[limit]=3&sort=publishedAt:desc`;
-  const res = await fetch(url, { cache: 'no-store' });
-  if (!res.ok) return [];
-  const response = await res.json();
-  return response.data;
+async function getFeaturedProjects(locale: string) {
+  return fetchApi<IProject[]>('/api/projects', locale, {
+    populate: 'coverImage',
+    'pagination[limit]': 3,
+    'sort': 'publishedAt:desc',
+  });
 }
 
-// Получаем 3 услуги
-async function getFeaturedServices(lang: string) {
-  const url = `${STRAPI_URL}/api/services?locale=${lang}&populate=image&pagination[limit]=3`;
-  const res = await fetch(url, { cache: 'no-store' });
-  if (!res.ok) return [];
-  const response = await res.json();
-  return response.data;
+async function getFeaturedServices(locale: string) {
+  return fetchApi<IService[]>('/api/services', locale, {
+    populate: 'image',
+    'pagination[limit]': 3,
+  });
 }
 
-// Получаем статистику со страницы "О компании"
-async function getStats(lang: string) {
-    const url = `${STRAPI_URL}/api/about-us?locale=${lang}&populate[stats]=true`;
-    const res = await fetch(url, { cache: 'no-store' });
-    if (!res.ok) return null;
-    const response = await res.json();
-    return response.data.stats;
+async function getStats(locale: string) {
+  const response = await fetchApi<any>('/api/about-us', locale, {
+    'populate[stats]': 'true'
+  });
+  return response.stats;
 }
-// --- КОНЕЦ ФУНКЦИЙ ---
+async function getLatestNews(locale: string) {
+  return fetchApi<INewsItem[]>('/api/newspapers', locale, {
+    populate: 'image',
+    'sort[0]': 'publishedDate:desc',
+    'pagination[limit]': "100",
+  });
+}
 
 
-export default async function HomePage(props: { params: Promise<{ lang: string }> }) {
-  const params = await props.params;
-  const lang = params.lang;
-  const [projects, services, stats] = await Promise.all([
-    getFeaturedProjects(lang),
-    getFeaturedServices(lang),
-    getStats(lang),
+
+export default async function HomePage() {
+  const locale = await getLocale();
+  const [projects, services, stats, news] = await Promise.all([
+    getFeaturedProjects(locale),
+    getFeaturedServices(locale),
+    getStats(locale),
+    getLatestNews(locale),
   ]);
 
   return (
     <HomePageClient
       projects={projects} 
       services={services} 
-      stats={stats} 
+      stats={stats}
+      news={news}
     />
   );
 }

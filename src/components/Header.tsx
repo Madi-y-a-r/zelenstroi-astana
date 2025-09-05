@@ -1,70 +1,138 @@
 // src/components/Header.tsx
 "use client";
 
+import * as React from "react";
 import Link from "next/link";
-import { Button } from "./ui/button";
-import { useEffect, useState } from "react";
-import { cn } from "@/lib/utils";
-import { usePathname } from 'next/navigation'; // 1. Импортируем хук usePathname
 import { useLocale, useTranslations } from "next-intl";
+import { cn } from "@/lib/utils";
+import {
+  NavigationMenu,
+  NavigationMenuContent,
+  NavigationMenuItem,
+  NavigationMenuLink,
+  NavigationMenuList,
+  NavigationMenuTrigger,
+  navigationMenuTriggerStyle,
+} from "@/components/ui/navigation-menu";
+import { Button } from "./ui/button";
+import { usePathname } from "next/navigation";
+import { LanguageSwitcher } from "./LanguageSwitcher";
+
+// Вспомогательный компонент для элементов выпадающего списка
+// Эта версия использует next/link для быстрой навигации без перезагрузки
+const ListItem = React.forwardRef<
+  React.ElementRef<"a">,
+  React.ComponentPropsWithoutRef<"a"> & { href: string }
+>(({ className, title, children, href, ...props }, ref) => {
+  return (
+    <li>
+      <NavigationMenuLink asChild>
+        <Link
+          href={href}
+          ref={ref}
+          className={cn(
+            "block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground",
+            className
+          )}
+          {...props}
+        >
+          <div className="text-sm font-medium leading-none">{title}</div>
+          <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
+            {children}
+          </p>
+        </Link>
+      </NavigationMenuLink>
+    </li>
+  );
+});
+ListItem.displayName = "ListItem";
+
 
 export function Header() {
   const t = useTranslations('Header');
+  const pathname = usePathname();
   const locale = useLocale();
-  const [isScrolled, setIsScrolled] = useState(false);
-  const pathname = usePathname(); // 2. Получаем текущий путь страницы
+  const [isScrolled, setIsScrolled] = React.useState(false);
 
-  // 3. Проверяем, является ли текущая страница главной
-  const isHomePage = pathname === `/${locale}`;
-
-  useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 10);
-    };
+  React.useEffect(() => {
+    const handleScroll = () => setIsScrolled(window.scrollY > 10);
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
-
+  const handleLocaleChange = () => {
+    const newLocale = locale === "kk" ? "ru" : "kk";
+    
+    return newLocale;
+  };
+  const aboutComponents = [
+    { title: t('about_concept'), href: `/${locale}/about/concept`, description: "Наша философия и подход к озеленению."},
+    { title: t('about_info'), href: `/${locale}/about`, description: "История, команда и достижения компании."},
+    { title: t('about_social'), href: `/${locale}/about/social-life`, description: "Наш вклад в жизнь города и общества."},
+  ];
+  const isHomePage = pathname === `/${locale}`;
   return (
     <header 
       className={cn(
-        "top-0 left-0 w-full z-50 transition-all duration-300 ease-in-out",
-        // 4. Динамически меняем стили в зависимости от страницы и скролла
-        isHomePage ? 'fixed' : 'sticky border-b border-gray-800',
-        (isScrolled || !isHomePage) 
-          ? 'bg-green-900/80 backdrop-blur-md' 
-          : 'bg-transparent'
+        "fixed top-0 left-0 w-full z-50 transition-colors duration-300 ease-in-out",
+        isScrolled ? "bg-green-700/80 shadow-md backdrop-blur-sm" : "bg-transparent"
       )}
     >
       <div className="container mx-auto flex justify-between items-center p-4">
-        {/* Логотип */}
-        <Link href={`/${locale}`} className="font-bold text-xl text-white hover:text-green-400 transition-colors">
+        <Link href={`/${locale}`} className={cn("font-bold text-xl", isHomePage ? "text-white" : "text-gray-900", isScrolled && "text-white")}>
           {t('name')}
         </Link>
 
-        {/* Навигация */}
-        <nav className="hidden md:flex gap-6 text-sm font-medium">
-          <Link href={`/${locale}/projects`} className="text-gray-300 hover:text-white transition-colors">
-            {t('projects')}
-          </Link>
-          <Link href={`/${locale}/services`} className="text-gray-300 hover:text-white transition-colors">
-            {t('services')}
-          </Link>
-          <Link href={`/${locale}/about`} className="text-gray-300 hover:text-white transition-colors">
-            {t('about')}  
-          </Link>
-          <Link href={`/${locale}/contacts`} className="text-gray-300 hover:text-white transition-colors">
-            {t('contacts')}
-          </Link>
-          <Link href={`/${locale}/corruption`} className="text-gray-300 hover:text-white transition-colors">
-            {t('corruption')}
-          </Link>
-        </nav>
+        <div className="hidden md:flex">
+          <NavigationMenu>
+            
+            <NavigationMenuList>
+              <LanguageSwitcher />
+              <NavigationMenuItem>
+                <NavigationMenuTrigger>{t('about')}</NavigationMenuTrigger>
+                <NavigationMenuContent>
+                  <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px]">
+                    {aboutComponents.map((component) => (
+                      <ListItem
+                        key={component.title}
+                        title={component.title}
+                        href={component.href}
+                      >
+                        {component.description}
+                      </ListItem>
+                    ))}
+                  </ul>
+                </NavigationMenuContent>
+              </NavigationMenuItem>
 
-        {/* Кнопка */}
-        <Button asChild variant="outline" className="border-green-500 text-green-500 hover:bg-green-500 hover:text-gray-900 rounded-full px-6">
-            <Link href={`/${locale}/contacts`}>Связаться с нами</Link>
-        </Button>
+             
+              <NavigationMenuItem>
+                <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
+                  <Link href={`/${locale}/procurement`}>{t('procurement')}</Link>
+                </NavigationMenuLink>
+              </NavigationMenuItem>
+              <NavigationMenuItem>
+                <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
+                  <Link href={`/${locale}/services`}>{t('services')}</Link>
+                </NavigationMenuLink>
+              </NavigationMenuItem>
+               <NavigationMenuItem>
+                <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
+                  <Link href={`/${locale}/anti-corruption`}>{t('compliance')}</Link>
+                </NavigationMenuLink>
+              </NavigationMenuItem>
+               <NavigationMenuItem>
+                <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
+                  <Link href={`/${locale}/news`}>{t('news')}</Link>
+                </NavigationMenuLink>
+              </NavigationMenuItem>
+               <NavigationMenuItem>
+                <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
+                  <Link href={`/${locale}/contacts`}>{t('contacts')}</Link>
+                </NavigationMenuLink>
+              </NavigationMenuItem>
+            </NavigationMenuList>
+          </NavigationMenu>
+        </div>
       </div>
     </header>
   );

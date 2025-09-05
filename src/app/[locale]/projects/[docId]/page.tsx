@@ -3,6 +3,7 @@
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import Image from "next/image";
+import { getTranslations } from "next-intl/server";
 
 // --- ИНТЕРФЕЙСЫ ---
 interface IStrapiImageFormat { url: string; width: number; height: number; }
@@ -30,6 +31,7 @@ interface IProject {
 
 // --- ПОЛНАЯ И РАБОТАЮЩАЯ ФУНКЦИЯ ---
 async function getProjectByDocId(docId: string) {
+  
   const url = `${process.env.NEXT_PUBLIC_STRAPI_URL}/api/projects/${docId}?populate=*`;
   const res = await fetch(url, { cache: 'no-store' });
 
@@ -43,8 +45,8 @@ async function getProjectByDocId(docId: string) {
 
 
 export default async function ProjectDetailsPage(props: { params: Promise<{ docId: string }> }) {
+  const t = await getTranslations();
   const params = await props.params;
-
   const {
     docId
   } = params;
@@ -53,7 +55,7 @@ export default async function ProjectDetailsPage(props: { params: Promise<{ docI
   const strapiUrl = process.env.NEXT_PUBLIC_STRAPI_URL;
 
   if (!project) {
-    return <div className="container mx-auto p-8">Проект не найден.</div>;
+    return <div className="container mx-auto p-8">{t('Projects.not_found')}</div>;
   }
 
   const cover = project.coverImage;
@@ -64,7 +66,7 @@ export default async function ProjectDetailsPage(props: { params: Promise<{ docI
       <div className="max-w-4xl mx-auto">
         <div className="mb-8">
           <Button asChild variant="outline">
-            <Link href="/">&larr; Назад к проектам</Link>
+            <Link href="/projects">&larr; {t('Projects.back_to_projects')}</Link>
           </Button>
         </div>
 

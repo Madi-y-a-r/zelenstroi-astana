@@ -9,6 +9,7 @@ import { Footer } from "@/components/Footer";
 import { hasLocale, NextIntlClientProvider } from "next-intl";
 import { notFound } from "next/dist/client/components/navigation";
 import { routing } from "@/i18n/routing";
+import { PageWrapper } from "@/components/PageWrapper";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 
@@ -37,7 +38,7 @@ export default async function RootLayout({
       >
         <NextIntlClientProvider>
           <Header />
-          {children}
+          <PageWrapper>{children}</PageWrapper>
           <Footer />
         </NextIntlClientProvider>
       </body>

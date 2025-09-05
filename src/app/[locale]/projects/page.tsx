@@ -3,6 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
+import { getLocale, getTranslations } from "next-intl/server";
 
 // --- ИСПРАВЛЕННЫЕ ИНТЕРФЕЙСЫ ---
 interface IStrapiImageFormat {
@@ -40,14 +41,14 @@ async function getProjects() {
 }
 
 export default async function ProjectsPage() {
+  const t = await getTranslations();
   const projects: IProject[] = await getProjects();
   const strapiUrl = process.env.NEXT_PUBLIC_STRAPI_URL;
 
   return (
     <main className="container mx-auto p-4 md:p-8 pt-[80px]">
-      {/* ... остальной код ... */}
       <section>
-        <h2 className="text-3xl font-bold mb-8 text-center">Наши Проекты</h2>
+        <h2 className="text-3xl font-bold mb-8 text-center">{t('Projects.title')}</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
           {projects.map((project) => {
             // --- ИСПРАВЛЕНО: УБИРАЕМ .data.attributes ---
